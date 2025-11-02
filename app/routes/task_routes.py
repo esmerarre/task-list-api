@@ -7,11 +7,11 @@ task_bp = Blueprint("task_bp", __name__, url_prefix="/tasks")
 @task_bp.post("")
 def create_task():
     request_body = request.get_json()
-    title = request_body["title"]
-    description = request_body["description"]
-    completed_at = request_body["completed_at"]
-
-    new_task = Task(title = title, description = description, completed_at= completed_at)
+    # title = request_body["title"]
+    # description = request_body["description"]
+    # completed_at = request_body["completed_at"]
+    new_task = Task.from_dict(request_body)
+    # new_task = Task(title = title, description = description, completed_at= completed_at)
     db.session.add(new_task)
     db.session.commit()
 
@@ -23,6 +23,19 @@ def create_task():
     #     "is_complete": True if new_task.completed_at == None else False
     #             }
     return response, 201
+
+@task_bp.get("")
+def get_all_tasks():
+    query = db.select(Task)
+
+    query = query.order_by(Task.id)
+    tasks = db.session.scalars(query)
+
+    tasks_response = []
+    for task in tasks:
+        task_dict = task.to_dict()
+        tasks_response.append(task_dict)
+    return tasks_response 
 
 
 
