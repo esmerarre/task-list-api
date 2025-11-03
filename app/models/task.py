@@ -14,9 +14,9 @@ class Task(db.Model):
     
     @classmethod
     def from_dict(cls, task_data):
-        new_task = Task(title = task_data["title"],
+        new_task = cls(title = task_data["title"],
                         description = task_data["description"],
-                        completed_at = None if task_data["is_complete"] is False else cls.completed_at)
+                        completed_at = None if ("is_complete" not in task_data or task_data["is_complete"] is False) else cls.completed_at)
         
         return new_task
 
