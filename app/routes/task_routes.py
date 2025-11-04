@@ -1,7 +1,7 @@
 from flask import Blueprint, abort, make_response, request, Response
 from ..db import db
 from app.models.task import Task
-from .route_utilities import validate_model
+from .route_utilities import validate_model, get_models_with_filters
 
 task_bp = Blueprint("task_bp", __name__, url_prefix="/tasks")
 
@@ -26,7 +26,13 @@ def create_task():
 def get_all_tasks():
     query = db.select(Task)
 
-    query = query.order_by(Task.id)
+    sort_param = request.args.get('sort', None)
+
+    if sort_param == "desc":
+        query = query.order_by(Task.title.desc())
+    elif sort_param == "asc":
+        query = query.order_by(Task.title.asc())
+
     tasks = db.session.scalars(query)
 
     tasks_response = []
@@ -34,6 +40,7 @@ def get_all_tasks():
         task_dict = task.to_dict()
         tasks_response.append(task_dict)
     return tasks_response
+
 
 @task_bp.get("<task_id>") 
 def get_one_task(task_id):
