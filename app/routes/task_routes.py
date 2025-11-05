@@ -2,6 +2,7 @@ from flask import Blueprint, abort, make_response, request, Response
 from ..db import db
 from app.models.task import Task
 from .route_utilities import validate_model, get_models_with_filters
+from datetime import datetime
 
 task_bp = Blueprint("task_bp", __name__, url_prefix="/tasks")
 
@@ -67,6 +68,27 @@ def delete_task(task_id):
 
     return Response(status=204, mimetype="application/json")
 
+
+@task_bp.patch("/<task_id>/mark_complete")
+def patch_complete_task(task_id):
+    #Mark Complete on an Incomplete Task; Mark Complete on a Completed Task
+    task = validate_model(Task, task_id)
+   
+    task.completed_at = datetime.now()
+    db.session.commit()
+
+    return Response(status=204, mimetype="application/json")
+
+
+@task_bp.patch("/<task_id>/mark_incomplete")
+def patch_incomplete_task(task_id):
+    #Mark Incomplete on a Completed Task; Mark Incomplete on an Incomplete Task
+    task = validate_model(Task, task_id)
+
+    task.completed_at = None
+    db.session.commit()
+
+    return Response(status=204, mimetype="application/json")
 
 # Tasks should contain these attributes. The tests require the following columns to be named exactly as title, description, and completed_at.
 
