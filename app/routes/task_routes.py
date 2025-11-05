@@ -3,6 +3,8 @@ from ..db import db
 from app.models.task import Task
 from .route_utilities import validate_model, get_models_with_filters
 from datetime import datetime
+import os
+import requests
 
 task_bp = Blueprint("task_bp", __name__, url_prefix="/tasks")
 
@@ -77,6 +79,8 @@ def patch_complete_task(task_id):
     task.completed_at = datetime.now()
     db.session.commit()
 
+    generate_slack_notification(task.title)
+
     return Response(status=204, mimetype="application/json")
 
 
@@ -90,9 +94,28 @@ def patch_incomplete_task(task_id):
 
     return Response(status=204, mimetype="application/json")
 
+
+def generate_slack_notification(model_attribute):
+    path = "https://slack.com/api/chat.postMessage"
+    SLACK_TOKEN = os.environ.get("SLACK_BOT_TOKEN")
+
+    headers = {
+        "Authorization": f"Bearer {SLACK_TOKEN}"
+    }
+    json = {
+        "channel": "task-notifications",
+        "text": f"Someone just completed the task {model_attribute}"
+    }
+
+    slack_response = requests.post(path, headers=headers, json=json)
+
+
+
 # Tasks should contain these attributes. The tests require the following columns to be named exactly as title, description, and completed_at.
 
 # id: a primary key for each task
 # title: text to name the task
 # description: text to describe the task
 # completed_at: a datetime that represents the date that a task is completed on. Can be nullable, and contain a null value. A task with a null value for completed_at has not been completed. When we create a new task, completed_at should be null AKA None in Python.
+
+
