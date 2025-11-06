@@ -10,6 +10,9 @@ bp = Blueprint("goal_bp", __name__, url_prefix="/goals")
 
 
 @bp.delete("/<goal_id>")
-def delete_task(goal_id):
-    goal_response = delete_model(Goal, goal_id)
-    return goal_response
+def delete_goal(goal_id):
+    goal = validate_model(Goal, goal_id)
+    db.session.delete(goal)
+    db.session.commit()
+
+    return Response(status=204, mimetype="application/json")
