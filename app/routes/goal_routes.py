@@ -22,7 +22,8 @@ def create_goal():
     db.session.add(new_goal)
     db.session.commit()
 
-    response = new_goal.to_dict()
+    #response = new_goal.to_dict()
+    response = {"id": new_goal.id, "title": new_goal.title}
     
     return response, 201
 
@@ -41,14 +42,17 @@ def get_all_goals():
 
     goals_response = []
     for goal in goals:
-        goal_dict = goal.to_dict()
+        #goal_dict = goal.to_dict()
+        goal_dict =  {"id": goal.id, "title": goal.title}
+
         goals_response.append(goal_dict)
     return goals_response
 
 @bp.get("/<goal_id>") 
 def get_one_goal(goal_id):
     goal = validate_model(Goal, goal_id)
-    return goal.to_dict()
+    goal_dict =  {"id": goal.id, "title": goal.title}
+    return goal_dict #goal.to_dict()
 
 @bp.put("/<goal_id>")
 def update_goal(goal_id):
@@ -73,14 +77,25 @@ def creat_tasks_for_goal(goal_id):
     goal = validate_model(Goal, goal_id)
     request_body = request.get_json()
     task_id_list = request_body.get("task_ids", [])
+    
+    for task_obj in list(goal.tasks):
+        task_obj.goal = None
+
     for task_id in task_id_list:
         task = validate_model(Task, task_id)
         task.goal = goal
 
     db.session.commit()
 
-    response = goal.to_dict()
-    del response["title"]
+    response = {"id": goal.id, "task_ids": task_id_list}
 
     return response, 200
 
+
+
+@bp.get("/<goal_id>/tasks")
+def get_tasks_for_one_goal(goal_id):
+    goal = validate_model(Goal, goal_id)
+    response = goal.to_dict()
+    #response = goal.task.to_dict()
+    return response
