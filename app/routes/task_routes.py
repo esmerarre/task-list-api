@@ -1,14 +1,14 @@
 from flask import Blueprint, abort, make_response, request, Response
 from ..db import db
 from app.models.task import Task
-from .route_utilities import validate_model, get_models_with_filters
+from .route_utilities import validate_model, get_models_with_filters, delete_model
 from datetime import datetime
 import os
 import requests
 
-task_bp = Blueprint("task_bp", __name__, url_prefix="/tasks")
+bp = Blueprint("task_bp", __name__, url_prefix="/tasks")
 
-@task_bp.post("")
+@bp.post("")
 def create_task():
     request_body = request.get_json()
 
@@ -25,7 +25,7 @@ def create_task():
     
     return response, 201
 
-@task_bp.get("")
+@bp.get("")
 def get_all_tasks():
     query = db.select(Task)
 
@@ -45,12 +45,12 @@ def get_all_tasks():
     return tasks_response
 
 
-@task_bp.get("<task_id>") 
+@bp.get("<task_id>") 
 def get_one_task(task_id):
     task = validate_model(Task, task_id)
     return task.to_dict()
 
-@task_bp.put("/<task_id>")
+@bp.put("/<task_id>")
 def update_task(task_id):
     task = validate_model(Task, task_id)
     request_body = request.get_json()
@@ -62,16 +62,13 @@ def update_task(task_id):
 
     return Response(status=204, mimetype="application/json")
 
-@task_bp.delete("/<task_id>")
+@bp.delete("/<task_id>")
 def delete_task(task_id):
-    task = validate_model(Task, task_id)
-    db.session.delete(task)
-    db.session.commit()
-
-    return Response(status=204, mimetype="application/json")
+    task_response = delete_model(Task, task_id)
+    return task_response
 
 
-@task_bp.patch("/<task_id>/mark_complete")
+@bp.patch("/<task_id>/mark_complete")
 def patch_complete_task(task_id):
     #Mark Complete on an Incomplete Task; Mark Complete on a Completed Task
     task = validate_model(Task, task_id)
@@ -84,7 +81,7 @@ def patch_complete_task(task_id):
     return Response(status=204, mimetype="application/json")
 
 
-@task_bp.patch("/<task_id>/mark_incomplete")
+@bp.patch("/<task_id>/mark_incomplete")
 def patch_incomplete_task(task_id):
     #Mark Incomplete on a Completed Task; Mark Incomplete on an Incomplete Task
     task = validate_model(Task, task_id)

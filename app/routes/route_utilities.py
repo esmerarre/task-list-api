@@ -1,4 +1,4 @@
-from flask import abort, make_response
+from flask import abort, make_response, Response
 from ..db import db
 
 def validate_model(cls, model_id):
@@ -29,3 +29,9 @@ def get_models_with_filters(cls, filters=None):
     models_response = [model.to_dict() for model in models]
     return models_response
 
+def delete_model(cls, model_id):
+    model = validate_model(cls, model_id)
+    db.session.delete(model)
+    db.session.commit()
+
+    return Response(status=204, mimetype="application/json")

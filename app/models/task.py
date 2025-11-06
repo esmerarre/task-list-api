@@ -10,7 +10,10 @@ class Task(db.Model):
     completed_at: Mapped[datetime | None]
 
     def to_dict(self):
-        return {"id": self.id, "title": self.title, "description": self.description, "is_complete": True if self.completed_at != None else False}
+        return {"id": self.id, 
+                "title": self.title, 
+                "description": self.description, 
+                "is_complete": True if self.completed_at != None else False}
     
     @classmethod
     def from_dict(cls, task_data):
