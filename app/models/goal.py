@@ -12,18 +12,21 @@ class Goal(db.Model):
     #task_ids: Mapped[Optional[int]] = mapped_column(ForeignKey("task.id"))
     tasks: Mapped[list["Task"]] = relationship(back_populates="goal")
 
-    def to_dict(self):
+    def to_dict(self, include_task_ids = False, include_goal_id_in_tasks = False):
         goal_as_dict = {"id": self.id, 
                 "title": self.title,
-                "tasks": [task.to_dict() for task in self.tasks]
+                "tasks": [task.to_dict(include_goal_id = include_goal_id_in_tasks) for task in self.tasks]
                 }
-        
+    
         if not self.tasks:
             goal_as_dict["tasks"] = []
-        if self.tasks:
+        if include_task_ids and self.tasks:
             goal_as_dict["task_ids"] = [task.id for task in self.tasks]
 
         return goal_as_dict
+    
+    #def to_dict_add_keys():
+
     
     @classmethod
     def from_dict(cls, goal_data):

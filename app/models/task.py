@@ -16,14 +16,15 @@ class Task(db.Model):
     goal_id: Mapped[Optional[int]] = mapped_column(ForeignKey("goal.id"))
     goal: Mapped[Optional["Goal"]] = relationship(back_populates="tasks")
 
-    def to_dict(self):
+    def to_dict(self, include_goal_id = False):
         task_as_dict = {"id": self.id, 
                 "title": self.title, 
                 "description": self.description, 
                 "is_complete": True if self.completed_at != None else False}
-        
-        if self.goal:
-            task_as_dict["goal"] = self.goal.title
+        if include_goal_id and self.goal_id is not None:
+            task_as_dict["goal_id"] = self.goal_id
+        # if self.goal:
+        #     task_as_dict["goal"] = self.goal.title
 
         return task_as_dict
     

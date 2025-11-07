@@ -96,6 +96,7 @@ def creat_tasks_for_goal(goal_id):
 @bp.get("/<goal_id>/tasks")
 def get_tasks_for_one_goal(goal_id):
     goal = validate_model(Goal, goal_id)
-    response = goal.to_dict()
+    response = goal.to_dict(include_goal_id_in_tasks = True)
+    #del response["task_ids"]
     #response = goal.task.to_dict()
     return response
