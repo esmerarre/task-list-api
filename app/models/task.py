@@ -27,13 +27,10 @@ class Task(db.Model):
     
     @classmethod
     def from_dict(cls, task_data):
-        goal_id = task_data.get("goal_id")
         new_task = cls(title = task_data["title"],
                         description = task_data["description"],
                         completed_at = None if ("is_complete" not in task_data 
                                                 or task_data["is_complete"] is False) 
-                                                else cls.completed_at,
-                        goal_id = goal_id)
-        
+                                                else cls.completed_at)
         return new_task
 
