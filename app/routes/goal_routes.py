@@ -2,7 +2,7 @@ from flask import Blueprint, abort, make_response, request, Response
 from ..db import db
 from app.models.goal import Goal
 from app.models.task import Task
-from .route_utilities import validate_model, get_models_with_filters, create_model
+from .route_utilities import validate_model, create_model, get_models_by_order
 from datetime import datetime
 import os
 import requests
@@ -12,47 +12,18 @@ bp = Blueprint("goal_bp", __name__, url_prefix="/goals")
 @bp.post("")
 def create_goal():
     request_body = request.get_json()
-
-    try:
-        new_goal = Goal.from_dict(request_body)
-    except:
-        response = {"details": "Invalid data"}
-        abort(make_response(response, 400))
-
-    db.session.add(new_goal)
-    db.session.commit()
-
-    #response = new_goal.to_dict()
-    response = {"id": new_goal.id, "title": new_goal.title}
-    
-    return response, 201
+    return create_model(Goal, request_body)
 
 @bp.get("")
 def get_all_goals():
-    query = db.select(Goal)
-
-    sort_param = request.args.get('sort', None)
-
-    if sort_param == "desc":
-        query = query.order_by(Goal.title.desc())
-    elif sort_param == "asc":
-        query = query.order_by(Goal.title.asc())
-
-    goals = db.session.scalars(query)
-
-    goals_response = []
-    for goal in goals:
-        #goal_dict = goal.to_dict()
-        goal_dict =  {"id": goal.id, "title": goal.title}
-
-        goals_response.append(goal_dict)
-    return goals_response
+    return get_models_by_order(Goal)
 
 @bp.get("/<goal_id>") 
 def get_one_goal(goal_id):
     goal = validate_model(Goal, goal_id)
     goal_dict =  {"id": goal.id, "title": goal.title}
-    return goal_dict #goal.to_dict()
+
+    return goal_dict
 
 @bp.put("/<goal_id>")
 def update_goal(goal_id):
@@ -84,19 +55,14 @@ def creat_tasks_for_goal(goal_id):
     for task_id in task_id_list:
         task = validate_model(Task, task_id)
         task.goal = goal
-
     db.session.commit()
 
     response = {"id": goal.id, "task_ids": task_id_list}
 
     return response, 200
 
-
-
 @bp.get("/<goal_id>/tasks")
 def get_tasks_for_one_goal(goal_id):
     goal = validate_model(Goal, goal_id)
-    response = goal.to_dict(include_goal_id_in_tasks = True)
-    #del response["task_ids"]
-    #response = goal.task.to_dict()
+    response = goal.to_dict(include_tasks = True, include_goal_id_in_tasks = True)
     return response

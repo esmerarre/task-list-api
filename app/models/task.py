@@ -1,5 +1,4 @@
 from sqlalchemy.orm import Mapped, mapped_column, relationship
-#from sqlalchemy import Boolean
 from sqlalchemy import ForeignKey
 from ..db import db
 from datetime import datetime
@@ -23,8 +22,6 @@ class Task(db.Model):
                 "is_complete": True if self.completed_at != None else False}
         if include_goal_id and self.goal_id is not None:
             task_as_dict["goal_id"] = self.goal_id
-        # if self.goal:
-        #     task_as_dict["goal"] = self.goal.title
 
         return task_as_dict
     

@@ -1,4 +1,4 @@
-from flask import abort, make_response, Response
+from flask import abort, make_response, Response, request
 from ..db import db
 
 def validate_model(cls, model_id):
@@ -17,18 +17,24 @@ def validate_model(cls, model_id):
 
     return model
 
-
-def get_models_with_filters(cls, filters=None):
+def get_models_by_order(cls, filters=None):
     query = db.select(cls)
-    
-    if filters:
-        for attribute, value in filters.items():
-            if hasattr(cls, attribute):
-                query = query.where(getattr(cls, attribute).ilike(f"%{value}%"))
 
-    models = db.session.scalars(query.order_by(cls.id))
-    models_response = [model.to_dict() for model in models]
-    return models_response
+    sort_param = request.args.get('sort', None)
+
+    if sort_param == "desc":
+        query = query.order_by(cls.title.desc())
+    elif sort_param == "asc":
+        query = query.order_by(cls.title.asc())
+
+    models = db.session.scalars(query)
+
+    model_response = []
+    for model in models:
+        model_dict =  model.to_dict()
+        model_response.append(model_dict)
+
+    return model_response
 
 def create_model(cls, model_data):
     try:
