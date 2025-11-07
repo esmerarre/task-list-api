@@ -1,5 +1,7 @@
 from flask import abort, make_response, Response, request
 from ..db import db
+import os
+import requests
 
 def validate_model(cls, model_id):
     try:
@@ -48,3 +50,17 @@ def create_model(cls, model_data):
     db.session.commit()
 
     return new_model.to_dict(), 201
+
+def generate_slack_notification(model_attribute):
+    path = "https://slack.com/api/chat.postMessage"
+    SLACK_TOKEN = os.environ.get("SLACK_BOT_TOKEN")
+
+    headers = {
+        "Authorization": f"Bearer {SLACK_TOKEN}"
+    }
+    json = {
+        "channel": "task-notifications",
+        "text": f"Someone just completed the task {model_attribute}"
+    }
+
+    slack_response = requests.post(path, headers=headers, json=json)

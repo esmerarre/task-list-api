@@ -1,10 +1,9 @@
 from flask import Blueprint, abort, make_response, request, Response
 from ..db import db
 from app.models.task import Task
-from .route_utilities import validate_model, create_model, get_models_by_order
+from .route_utilities import validate_model, create_model, get_models_by_order, generate_slack_notification
 from datetime import datetime
-import os
-import requests
+
 
 bp = Blueprint("task_bp", __name__, url_prefix="/tasks")
 
@@ -63,16 +62,3 @@ def patch_incomplete_task(task_id):
     return Response(status=204, mimetype="application/json")
 
 
-def generate_slack_notification(model_attribute):
-    path = "https://slack.com/api/chat.postMessage"
-    SLACK_TOKEN = os.environ.get("SLACK_BOT_TOKEN")
-
-    headers = {
-        "Authorization": f"Bearer {SLACK_TOKEN}"
-    }
-    json = {
-        "channel": "task-notifications",
-        "text": f"Someone just completed the task {model_attribute}"
-    }
-
-    slack_response = requests.post(path, headers=headers, json=json)
